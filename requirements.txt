@@ -4,4 +4,3 @@ pandas
 numpy
 streamlit-aggrid
 xlrd
-dataframe.py
