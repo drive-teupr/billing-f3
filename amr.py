@@ -51,7 +51,9 @@ def copyDataframe(lalu, akhir, blth_lalu, blth_kini):
                                 +((jurusakhir['WBP_AKHIR']-jurusakhir['WBP_PASANG'])
                                 +(jurusakhir['WBP_CABUT']-jurusakhir['WBP_LALU']))
                                 )
-        
+
+    jurusakhir['DLPD_KVARH'] = akhir['DLPD_KVARH']    
+    
     kroscek_temp = pd.DataFrame()
 
     kroscek_temp = pd.merge(juruslalu,jurusakhir,on='IDPEL',how='right')
@@ -70,6 +72,7 @@ def copyDataframe(lalu, akhir, blth_lalu, blth_kini):
     kroscek['WBP_AKHIR'] = kroscek_temp['WBP_AKHIR_y']
     kroscek['DLPD_LALU'] = kroscek_temp['DLPD_x']
     kroscek['DLPD_KINI'] = kroscek_temp['DLPD_y']
+    kroscek['DLPD_KVARH'] = kroscek_temp['DLPD_KVARH']
     kroscek['TARIF'] = kroscek_temp['TARIF']
     kroscek['DAYA'] = kroscek_temp['DAYA']
     kroscek['JAM_NYALA'] = kroscek_temp['JAM_NYALA']
@@ -102,15 +105,13 @@ def copyDataframe(lalu, akhir, blth_lalu, blth_kini):
     return kroscek
 
 def amrFilter(lalu, akhir, blth_lalu, blth_kini):
-    amr_df = copyDataframe(lalu, akhir, blth_lalu, blth_kini)
+    kroscek = copyDataframe(lalu, akhir, blth_lalu, blth_kini)
     criteria1 = ["N KWH N O R M A L", "J REKENING PECAHAN", "L STAND METER MUNDUR", "M KWH MAXIMUM"]
 
-    amr_df_1 = amr_df[amr_df['DLPD_KINI'].isin(criteria1)]
-    amr_df_1 = amr_df_1[amr_df_1['SELISIH 50%'].isin(["Selisih Besar"])]
+    temp1 = kroscek[kroscek['DLPD_KINI'].isin(criteria1)]
+    amr_df= temp1[temp1['SELISIH 50%'].isin(["Selisih Besar"])]
 
-    # amr_df = kroscek[kroscek['DLPD_KINI'].isin(criteria1)]
-    # amr_df = amr_df[amr_df['SELISIH 50%'].isin(["Selisih Besar"])]
-    return amr_df_1
+    return amr_df
 
 st.set_page_config(page_title='Verifikasi F3',
                    layout="wide")
@@ -144,7 +145,7 @@ if st.button("Proses"):
         with tabs[0]:
             st.write("Semua")
             st.dataframe(copyDataframe(lalu, akhir, blth_lalu, blth_kini))
-            
+
         with tabs[1]:
             st.write("Hasil AMR")
             st.dataframe(amrFilter(lalu, akhir, blth_lalu, blth_kini))
